@@ -1,8 +1,13 @@
+
 using Godot;
 
 /// Translation of the gui_panel_3d.tscn tutorial.
-public partial class GUIPanel3D : Node
+public partial class GUIPanel3D : Node3D
 {
+    public GUIPanel3D() { }
+    [Export]
+    public string PanelText { get => Text.Text; set => Text.Text = value; }
+
     // Used for checking if the mouse is inside the Area3D.
     private bool IsMouseInside = false;
 
@@ -15,14 +20,16 @@ public partial class GUIPanel3D : Node
     private SubViewport NodeViewport;
     private MeshInstance3D NodeQuad;
     private Area3D NodeArea;
+    private Label Text;
 
     public override void _Ready()
     {
-
+        Visible = false;
         // Equivalent of @onready on GDScript.
         NodeViewport = GetNode<SubViewport>("SubViewport");
         NodeQuad = GetNode<MeshInstance3D>("Quad");
         NodeArea = GetNode<Area3D>("Quad/Area3D");
+        Text = GetNode<Label>("SubViewport/GUI/Panel/VBoxContainer/Label");
 
         NodeArea.Connect(CollisionObject3D.SignalName.MouseEntered, new Callable(this, MethodName.NodeArea_MouseEntered));
         NodeArea.Connect(CollisionObject3D.SignalName.MouseExited, new Callable(this, MethodName.NodeArea_MouseExited));
@@ -31,7 +38,8 @@ public partial class GUIPanel3D : Node
         // If the material is NOT set to use billboard settings, then avoid running billboard specific code
         // Note: cast to StandardMaterial3D added to access BillboardMode.
         StandardMaterial3D material = (StandardMaterial3D)NodeQuad.GetSurfaceOverrideMaterial(0);
-        if (material.BillboardMode is BaseMaterial3D.BillboardModeEnum.Disabled) SetProcess(false);
+        //material.BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled;
+        //if (material.BillboardMode is BaseMaterial3D.BillboardModeEnum.Disabled) SetProcess(false);
     }
 
     public override void _Process(double delta)
@@ -39,27 +47,16 @@ public partial class GUIPanel3D : Node
         RotateAreaToBillboard();
     }
 
-    
+
 
     public override void _UnhandledInput(InputEvent @event)
     {
-        //switch (@event)
-        //{
-        //    case InputEventMouseButton:
-        //    case InputEventMouseMotion:
-        //    case InputEventScreenDrag:
-        //    case InputEventScreenTouch:
-        //        break;
-        //    default:
-        //        break;
-        //}
-
         switch (@event)
-        { 
-            case InputEventMouseButton: 
-            case InputEventMouseMotion: 
-            case InputEventScreenDrag: 
-            case InputEventScreenTouch: 
+        {
+            case InputEventMouseButton:
+            case InputEventMouseMotion:
+            case InputEventScreenDrag:
+            case InputEventScreenTouch:
                 return;
         }
 
@@ -124,7 +121,7 @@ public partial class GUIPanel3D : Node
         }
 
         var e = @event as InputEventMouse;
-        
+
         e.Position = eventPosition2D;
         $"[event]position: {e.Position.X}, {e.Position.Y}".ToConsole();
         $"[event]eventposition2d: {eventPosition2D.X}, {eventPosition2D.Y}".ToConsole();
@@ -148,7 +145,7 @@ public partial class GUIPanel3D : Node
                 $"[calculating_distance]last_event_position_2d==Zero: {LastEventPosition2D.X}, {LastEventPosition2D.Y}".ToConsole();
                 switch (@event)
                 {
-                    case InputEventMouseMotion:    
+                    case InputEventMouseMotion:
                         mouse.Relative = eventPosition2D;
                         break;
                     case InputEventScreenDrag:
@@ -219,8 +216,7 @@ public partial class GUIPanel3D : Node
     }
 }
 
-
-public static class Extensions
+public static class ConsoleExtensions
 {
-    public static void ToConsole(this string text) => GD.Print(text);
+    public static void ToConsole(string what) => GD.Print(what);
 }
